@@ -9,6 +9,7 @@ import platform
 import time
 import traceback
 from typing import Any, Dict, List, Optional, Tuple
+from pprint import pformat
 
 # 3-rd party packages
 import docker
@@ -23,6 +24,7 @@ from demisto_sdk.commands.common.constants import (INTEGRATIONS_DIR,
 # Local packages
 from demisto_sdk.commands.common.tools import (get_all_docker_images,
                                                run_command_os)
+from demisto_sdk.commands.common.decorators import debug
 from demisto_sdk.commands.lint.commands_builder import (
     build_bandit_command, build_flake8_command, build_mypy_command,
     build_pwsh_analyze_command, build_pwsh_test_command, build_pylint_command,
@@ -42,6 +44,13 @@ from ruamel.yaml import YAML
 from wcmatch.pathlib import NEGATE, Path
 
 logger = logging.getLogger('demisto-sdk')
+build_bandit_command = debug(build_bandit_command)
+build_flake8_command = debug(build_flake8_command)
+build_mypy_command = debug(build_mypy_command)
+build_pylint_command = debug(build_pylint_command)
+build_pytest_command = debug(build_pytest_command)
+build_vulture_command = debug(build_vulture_command)
+build_xsoar_linter_command = debug(build_xsoar_linter_command)
 
 
 class Linter:
@@ -130,6 +139,7 @@ class Linter:
         """
         # Gather information for lint check information
         skip = self._gather_facts(modules)
+        logger.debug(f'self._facts={pformat(self._facts)}')
         # If not python pack - skip pack
         if skip:
             return self._pkg_lint_status
@@ -388,6 +398,7 @@ class Linter:
         """
         status = SUCCESS
         FAIL_PYLINT = 0b10
+        logger.debug(f'lint_files={pformat(lint_files)}')
         with pylint_plugin(self._pack_abs_dir):
             log_prompt = f"{self._pack_name} - XSOAR Linter"
             logger.info(f"{log_prompt} - Start")
