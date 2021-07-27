@@ -46,7 +46,7 @@ def raise_file_exists_error():
 
 
 def test_get_created_dir_name(monkeypatch, initiator):
-    monkeypatch.setattr('builtins.input', lambda _: DIR_NAME)
+    monkeypatch.setattr('click.prompt', lambda _: DIR_NAME)
     initiator.get_created_dir_name('integration')
     assert initiator.dir_name == DIR_NAME
 
@@ -54,19 +54,19 @@ def test_get_created_dir_name(monkeypatch, initiator):
 def test_get_object_id(monkeypatch, initiator):
     initiator.dir_name = DIR_NAME
     # test integration object with ID like dir name
-    monkeypatch.setattr('builtins.input', lambda _: 'Y')
+    monkeypatch.setattr('click.prompt', lambda _: 'Y')
     initiator.get_object_id('integration')
     assert initiator.id == DIR_NAME
 
     initiator.id = ''
     # test pack object with ID like dir name
-    monkeypatch.setattr('builtins.input', lambda _: 'Y')
+    monkeypatch.setattr('click.prompt', lambda _: 'Y')
     initiator.get_object_id('pack')
     assert initiator.id == DIR_NAME
 
     initiator.id = ''
     # test script object with ID different than dir name
-    monkeypatch.setattr('builtins.input', generate_multiple_inputs(deque(['N', 'SomeIntegrationID'])))
+    monkeypatch.setattr('click.prompt', generate_multiple_inputs(deque(['N', 'SomeIntegrationID'])))
     initiator.get_object_id('script')
     assert initiator.id == 'SomeIntegrationID'
 
@@ -75,7 +75,7 @@ def test_get_object_id_custom_name(monkeypatch, initiator):
     """Tests integration with custom name of id
     """
     given_id = 'given_id'
-    monkeypatch.setattr('builtins.input', lambda _: given_id)
+    monkeypatch.setattr('click.prompt', lambda _: given_id)
     initiator.is_pack_creation = False
     initiator.get_object_id('integration')
     assert given_id == initiator.id
@@ -264,7 +264,7 @@ class TestCreateMetadata:
 
 
 def test_get_valid_user_input(monkeypatch, initiator):
-    monkeypatch.setattr('builtins.input', generate_multiple_inputs(deque(['InvalidInput', '100', '1'])))
+    monkeypatch.setattr('click.prompt', generate_multiple_inputs(deque(['InvalidInput', '100', '1'])))
     user_choice = initiator.get_valid_user_input(INTEGRATION_CATEGORIES, 'Choose category')
     assert user_choice == INTEGRATION_CATEGORIES[0]
 

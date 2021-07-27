@@ -5,6 +5,7 @@ from distutils.dir_util import copy_tree
 from distutils.version import LooseVersion
 from typing import Dict, List
 
+import click
 import yaml
 import yamlordereddictloader
 from demisto_sdk.commands.common import tools
@@ -119,7 +120,8 @@ class Initiator:
         self.full_output_path = ''
 
         while ' ' in name:
-            name = str(input("The directory and file name cannot have spaces in it, Enter a different name: "))
+            name = click.prompt("The directory and file name cannot have spaces in it, Enter a different name: ",
+                                type=str)
 
         self.dir_name = name
 
@@ -155,15 +157,16 @@ class Initiator:
         if self.is_integration:
             while template and template not in self.INTEGRATION_TEMPLATE_OPTIONS:
                 options_str = ', '.join(self.INTEGRATION_TEMPLATE_OPTIONS)
-                template = str(input(f"Enter a valid template name, or press enter to choose the default template"
-                                     f" ({self.DEFAULT_INTEGRATION_TEMPLATE}).\nValid options: {options_str}\n"))
+                template = click.prompt(f"Enter a valid template name, or press enter to choose the default template"
+                                        f" ({self.DEFAULT_INTEGRATION_TEMPLATE}).\nValid options: {options_str}\n",
+                                        type=str)
             return template if template else self.DEFAULT_INTEGRATION_TEMPLATE
 
         elif self.is_script:
             while template and template not in self.SCRIPT_TEMPLATE_OPTIONS:
                 options_str = ', '.join(self.SCRIPT_TEMPLATE_OPTIONS)
-                template = str(input(f"Enter a valid template name, or press enter to choose the default template"
-                                     f" ({self.DEFAULT_SCRIPT_TEMPLATE}).\nValid options: {options_str}\n"))
+                template = click.prompt(f"Enter a valid template name, or press enter to choose the default template"
+                                        f" ({self.DEFAULT_SCRIPT_TEMPLATE}).\nValid options: {options_str}\n", type=str)
             return template if template else self.DEFAULT_SCRIPT_TEMPLATE
 
         # if reached here it is a pack init - will be used again if user decides to create an integration
@@ -176,24 +179,25 @@ class Initiator:
             created_object (str): the type of the created object (integration/script/pack)
         """
         while not self.dir_name or len(self.dir_name) == 0:
-            self.dir_name = str(input(f"Please input the name of the initialized {created_object}: "))
+            self.dir_name = click.prompt(f"Please input the name of the initialized {created_object}: ", type=str)
             while ' ' in self.dir_name:
-                self.dir_name = str(input("The directory name cannot have spaces in it, Enter a different name: "))
+                self.dir_name = click.prompt("The directory name cannot have spaces in it, Enter a different name: ",
+                                             type=str)
 
     def get_object_id(self, created_object: str):
         if not self.id:
             if self.is_pack_creation:  # There was no option to enter the ID in this process.
-                use_dir_name = str(input(f"Do you want to use the directory name as an "
-                                         f"ID for the {created_object}? Y/N "))
+                use_dir_name = click.confirm(f"Do you want to use the directory name as an "
+                                             f"ID for the {created_object}? Y/N ")
             else:
-                use_dir_name = str(input(f"No ID given for the {created_object}'s yml file. "
-                                         f"Do you want to use the directory name? Y/N "))
+                use_dir_name = click.confirm(f"No ID given for the {created_object}'s yml file. "
+                                             f"Do you want to use the directory name? Y/N ")
 
-            if use_dir_name and use_dir_name.lower() in ['y', 'yes']:
+            if use_dir_name:
                 self.id = self.dir_name
             else:
                 while not self.id:
-                    self.id = str(input(f"Please enter the id name for the {created_object}: "))
+                    self.id = click.prompt(f"Please enter the id name for the {created_object}: ")
 
     def pack_init(self) -> bool:
         """Creates a pack directory tree.
@@ -235,8 +239,7 @@ class Initiator:
 
         metadata_path = os.path.join(self.full_output_path, 'pack_metadata.json')
         with open(metadata_path, 'a') as fp:
-            user_response = input("\nWould you like fill pack's metadata file? Y/N ").lower()
-            fill_manually = user_response in ['y', 'yes']
+            fill_manually = click.confirm("\nWould you like fill pack's metadata file? Y/N ")
 
             pack_metadata = Initiator.create_metadata(fill_manually)
             self.category = pack_metadata['categories'][0]
@@ -244,12 +247,12 @@ class Initiator:
 
             print_success(f"Created pack metadata at path : {metadata_path}")
 
-        create_integration = str(input("\nDo you want to create an integration in the pack? Y/N ")).lower()
-        if create_integration in ['y', 'yes']:
-            is_same_category = str(input("\nDo you want to set the integration category as you defined in the pack "
-                                         "metadata? Y/N ")).lower()
+        create_integration = click.confirm("\nDo you want to create an integration in the pack? Y/N ")
+        if create_integration:
+            is_same_category = click.confirm("\nDo you want to set the integration category as you defined in the pack "
+                                             "metadata? Y/N ")
 
-            integration_category = self.category if is_same_category in ['y', 'yes'] else ''
+            integration_category = self.category if is_same_category else ''
             integration_init = Initiator(output=os.path.join(self.full_output_path, 'Integrations'),
                                          integration=True, common_server=self.common_server,
                                          demisto_mock=self.demisto_mock, template=self.template,
@@ -304,11 +307,11 @@ class Initiator:
         if not fill_manually:
             return pack_metadata  # return xsoar template
 
-        pack_metadata['name'] = input("\nDisplay name of the pack: ")
+        pack_metadata['name'] = click.prompt("\nDisplay name of the pack: ")
         if not pack_metadata.get('name'):
             pack_metadata['name'] = '## FILL MANDATORY FIELD ##'
 
-        pack_metadata['description'] = input("\nDescription of the pack: ")
+        pack_metadata['description'] = click.prompt("\nDescription of the pack: ")
         if not pack_metadata.get('description'):
             pack_metadata['description'] = '## FILL MANDATORY FIELD ##'
 
@@ -323,26 +326,26 @@ class Initiator:
 
             return pack_metadata
 
-        pack_metadata['author'] = input("\nAuthor of the pack: ")
+        pack_metadata['author'] = click.prompt("\nAuthor of the pack: ")
 
         if pack_metadata.get('support') != 'community':  # get support details from the user for non community packs
-            support_url = input("\nThe url of support, should be a valid support/info URL (optional): ")
+            support_url = click.prompt("\nThe url of support, should be a valid support/info URL (optional): ")
             while support_url and "http" not in support_url:
-                support_url = input("\nIncorrect input. Please enter full valid url: ")
+                support_url = click.prompt("\nIncorrect input. Please enter full valid url: ")
             pack_metadata['url'] = support_url
-            pack_metadata['email'] = input("\nThe email in which users can reach out for support (optional): ")
+            pack_metadata['email'] = click.prompt("\nThe email in which users can reach out for support (optional): ")
         else:  # community pack url should refer to the marketplace live discussions
             pack_metadata['url'] = MARKETPLACE_LIVE_DISCUSSIONS
 
-        dev_email = input("\nThe email will be used to inform you for any changes made to your pack (optional): ")
+        dev_email = click.prompt("\nThe email will be used to inform you for any changes made to your pack (optional): ")
         if dev_email:
             pack_metadata['devEmail'] = [e.strip() for e in dev_email.split(',') if e]
 
-        tags = input("\nTags of the pack, comma separated values: ")
+        tags = click.prompt("\nTags of the pack, comma separated values: ")
         tags_list = [t.strip() for t in tags.split(',') if t]
         pack_metadata['tags'] = tags_list
 
-        github_users = input("\nPack default reviewers, comma separated github username: ")
+        github_users = click.prompt("\nPack default reviewers, comma separated github username: ")
         github_users_list = [u.strip() for u in github_users.split(',') if u]
         pack_metadata['githubUser'] = github_users_list
 
@@ -363,17 +366,17 @@ class Initiator:
             option_message += f"[{index}] {option}\n"
         option_message += "\nEnter option: "
 
-        user_input = input(option_message)
+        user_input = click.prompt(option_message)
 
         while True:
             try:
                 user_choice = int(user_input)
                 if user_choice not in range(1, len(options_list) + 1):
-                    user_input = input(f"\nInvalid option {user_input}, please enter valid choice: ")
+                    user_input = click.prompt(f"\nInvalid option {user_input}, please enter valid choice: ")
                 else:
                     return options_list[user_choice - 1]
             except ValueError:
-                user_input = input("\nThe option must be number, please enter valid choice: ")
+                user_input = click.prompt("\nThe option must be number, please enter valid choice: ")
 
     def integration_init(self) -> bool:
         """Creates a new integration according to a template.
@@ -508,12 +511,9 @@ class Initiator:
             os.mkdir(self.full_output_path)
 
         except FileExistsError:
-            to_delete = str(input(f"The directory {self.full_output_path} "
-                                  f"already exists.\nDo you want to overwrite it? Y/N ")).lower()
-            while to_delete != 'y' and to_delete != 'n':
-                to_delete = str(input("Your response was invalid.\nDo you want to delete it? Y/N ").lower())
-
-            if to_delete in ['y', 'yes']:
+            to_delete = click.confirm(f"The directory {self.full_output_path} "
+                                      f"already exists.\nDo you want to overwrite it? Y/N ")
+            if to_delete:
                 shutil.rmtree(path=self.full_output_path, ignore_errors=True)
                 os.mkdir(self.full_output_path)
 

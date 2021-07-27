@@ -36,20 +36,13 @@ class BasePlaybookYMLFormat(BaseUpdateYML):
         if self.verbose:
             click.echo('Adding descriptions for the playbook and to relevant tasks')
         if 'description' not in set(self.data.keys()):
-            click.secho('No description is specified for this playbook, would you like to add a description? [Y/n]',
-                        fg='bright_red')
-            user_answer = ''
-            while not user_answer:
-                user_answer = input()
-                if user_answer in ['n', 'N', 'no', 'No']:
-                    user_description = ''
-                    self.data['description'] = user_description
-                elif user_answer in ['y', 'Y', 'yes', 'Yes']:
-                    user_description = input("Please enter the description\n")
-                    self.data['description'] = user_description
-                else:
-                    click.secho('Invalid input, would you like to add a description? [Y/n]', fg='bright_red')
-                    user_answer = ''
+            user_answer = click.confirm(click.style('No description is specified for this playbook, would you like '
+                                                    'to add a description? [Y/n]', fg='bright_red'))
+            if user_answer:
+                user_description = click.prompt("Please enter the description\n")
+                self.data['description'] = user_description
+            if not user_answer:
+                self.data['description'] = ''
 
         for task_id, task in self.data.get('tasks', {}).items():
             if not task['task'].get('description') and task['type'] in ['title', 'start', 'playbook']:
@@ -71,10 +64,9 @@ class BasePlaybookYMLFormat(BaseUpdateYML):
                     'fromversion'] = self.from_version if self.from_version else NEW_FILE_DEFAULT_5_5_0_FROMVERSION
                 return
 
-            click.secho('No fromversion is specified for this playbook, would you like me to update for you? [Y/n]',
-                        fg='red')
-            user_answer = input()
-            if user_answer in ['n', 'N', 'no', 'No']:
+            user_answer = click.confirm(click.style('No fromversion is specified for this playbook, '
+                                                    'would you like me to update for you? [Y/n]', fg='red'))
+            if not user_answer:
                 click.secho('Moving forward without updating fromversion tag', fg='yellow')
                 return
 
@@ -86,8 +78,8 @@ class BasePlaybookYMLFormat(BaseUpdateYML):
 
             is_input_version_valid = False
             while not is_input_version_valid:
-                click.secho('Please specify the desired version X.X.X', fg='yellow')
-                user_desired_version = input()
+                user_desired_version = click.prompt(click.style('Please specify the desired version X.X.X',
+                                                                fg='yellow'))
                 if re.match(r'\d+\.\d+\.\d+', user_desired_version):
                     self.data['fromversion'] = user_desired_version
                     is_input_version_valid = True
@@ -99,10 +91,9 @@ class BasePlaybookYMLFormat(BaseUpdateYML):
             if self.assume_yes:
                 self.data['fromversion'] = NEW_FILE_DEFAULT_5_5_0_FROMVERSION
             else:
-                set_from_version = str(
-                    input(f"\nYour current fromversion is: '{self.data.get('fromversion')}'. Do you want "
-                          f"to set it to '5.5.0'? Y/N ")).lower()
-                if set_from_version in ['y', 'yes']:
+                set_from_version = click.confirm(f"\nYour current fromversion is: '{self.data.get('fromversion')}'. "
+                                                 f"Do you want to set it to '5.5.0'? Y/N ")
+                if set_from_version:
                     self.data['fromversion'] = NEW_FILE_DEFAULT_5_5_0_FROMVERSION
 
     def update_task_uuid(self):

@@ -248,10 +248,10 @@ class BaseUpdate:
                 if self.assume_yes:
                     self.data[self.from_version_key] = NEW_FILE_DEFAULT_5_5_0_FROMVERSION
                 else:
-                    set_from_version = str(
-                        input(f"\nYour current fromversion is: '{self.data.get(self.from_version_key)}'. Do you want "
-                              f"to set it to '5.5.0'? Y/N ")).lower()
-                    if set_from_version in ['y', 'yes']:
+                    set_from_version = click.confirm(f"\nYour current fromversion is: "
+                                                     f"'{self.data.get(self.from_version_key)}'. Do you want "
+                                                     f"to set it to '5.5.0'? Y/N ")
+                    if set_from_version:
                         self.data[self.from_version_key] = NEW_FILE_DEFAULT_5_5_0_FROMVERSION
 
         # If there is an existing file in content repo

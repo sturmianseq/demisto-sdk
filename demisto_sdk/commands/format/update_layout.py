@@ -6,7 +6,7 @@ from typing import Tuple
 import click
 import yaml
 from demisto_sdk.commands.common.hook_validations.layout import LayoutValidator
-from demisto_sdk.commands.common.tools import print_error, print_warning
+from demisto_sdk.commands.common.tools import print_error
 from demisto_sdk.commands.format.format_constants import (
     DEFAULT_VERSION, ERROR_RETURN_CODE, NEW_FILE_DEFAULT_5_FROMVERSION,
     SKIP_RETURN_CODE, SUCCESS_RETURN_CODE, VERSION_6_0_0)
@@ -147,16 +147,15 @@ class LayoutBaseFormat(BaseUpdateJSON, ABC):
 
     def set_group_field(self):
         if self.data['group'] != 'incident' and self.data['group'] != 'indicator':
-            click.secho('No group is specified for this layout, would you like me to update for you? [Y/n]',
-                        fg='red')
-            user_answer = input()
+            user_answer = click.confirm(click.style('No group is specified for this layout, would you like me to '
+                                                    'update for you? [Y/n]', fg='red'))
             # Checks if the user input is no
-            if user_answer in ['n', 'N', 'No', 'no']:
+            if not user_answer:
                 print_error('Moving forward without updating group field')
                 return
 
-            print_warning('Please specify the desired group: incident or indicator')
-            user_desired_group = input()
+            user_desired_group = click.prompt(click.style('Please specify the desired group: incident or indicator',
+                                                          fg="yellow"))
             if re.match(r'(^incident$)', user_desired_group, re.IGNORECASE):
                 self.data['group'] = 'incident'
             elif re.match(r'(^indicator$)', user_desired_group, re.IGNORECASE):

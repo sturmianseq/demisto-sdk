@@ -211,7 +211,8 @@ class BaseUpdateYML(BaseUpdate):
         else:
             description_field = 'comment'
 
-        user_response = input("\nPlease enter the replacement entity display name if any and press Enter if not.\n")
+        user_response = click.prompt("\nPlease enter the replacement entity display name if any "
+                                     "and press Enter if not.\n")
 
         if user_response:
             self.data[description_field] = f'Deprecated. Use {user_response} instead.'

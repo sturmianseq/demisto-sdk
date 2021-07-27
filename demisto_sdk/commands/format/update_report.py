@@ -1,7 +1,7 @@
 from typing import Tuple
 
 import click
-from demisto_sdk.commands.common.tools import print_error, print_warning
+from demisto_sdk.commands.common.tools import print_error
 from demisto_sdk.commands.format.format_constants import (ERROR_RETURN_CODE,
                                                           SKIP_RETURN_CODE,
                                                           SUCCESS_RETURN_CODE)
@@ -55,20 +55,22 @@ class ReportJSONFormat(BaseUpdateJSON):
         ['pdf', 'csv', 'docx']
         """
         if not self.data.get('type'):
-            click.secho('No type is specified for this report, would you like me to update for you? [Y/n]',
-                        fg='red')
-            user_answer = input()
+            user_answer = click.confirm(click.style('No type is specified for this report, would you like me to '
+                                                    'update for you? [Y/n]', fg='red'))
             # Checks if the user input is no
-            if user_answer in ['n', 'N', 'No', 'no']:
+            if not user_answer:
                 print_error('Moving forward without updating type field')
                 return
 
-            print_warning('Please specify the desired type: pdf | csv | docx')
-            user_desired_type = input()
-            if user_desired_type.lower() in ('pdf', 'csv', 'docx'):
-                self.data['type'] = user_desired_type.lower()
-            else:
-                print_error('type is not valid')
+            valid_type = False
+            while not valid_type:
+                user_desired_type = click.prompt(click.style('Please specify the desired type: pdf | csv | docx',
+                                                             fg='yellow'), type=str)
+                if user_desired_type.lower() in ('pdf', 'csv', 'docx'):
+                    self.data['type'] = user_desired_type.lower()
+                    valid_type = True
+                else:
+                    print_error('type is not valid')
 
     def set_orientation(self):
         """
@@ -77,16 +79,15 @@ class ReportJSONFormat(BaseUpdateJSON):
         ['landscape', 'portrait', '']
         """
         if not self.data.get('orientation'):
-            click.secho('No orientation is specified for this report, would you like me to update for you? [Y/n]',
-                        fg='red')
-            user_answer = input()
+            user_answer = click.confirm(click.style('No orientation is specified for this report, '
+                                                    'would you like me to update for you? [Y/n]', fg='red'))
             # Checks if the user input is no
-            if user_answer in ['n', 'N', 'No', 'no']:
+            if not user_answer:
                 print_error('Moving forward without updating orientation field')
                 return
 
-            click.secho('Please specify the desired orientation: landscape | portrait ', fg='yellow')
-            user_desired_orientation = input()
+            user_desired_orientation = click.prompt(click.style('Please specify the desired '
+                                                                'orientation: landscape | portrait ', fg='yellow'))
             if user_desired_orientation.lower() in ('landscape', 'portrait'):
                 self.data['orientation'] = user_desired_orientation.lower()
             else:
