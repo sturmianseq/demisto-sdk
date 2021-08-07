@@ -1,8 +1,13 @@
+---
+title: lint
+---
+
 ::: mkdocs-click
     :module: demisto_sdk.__main__
     :command: lint
+    :prog_name: demisto-sdk lint
 
-### Usage
+### Use Cases
 
 1. Package in host checks - flake8, bandit, mypy, vulture.
 2. Package in docker image checks -  pylint, pytest, powershell - test, powershell - analyze.
@@ -13,7 +18,11 @@ If no additional flags specifying the packs are given,will lint only changed fil
 ### Examples
 
 ---
-`demisto-sdk lint -i Integrations/PaloAltoNetworks_XDR,Scripts/HellowWorldScript --no-mypy`
+
+```bash
+demisto-sdk lint -i Integrations/PaloAltoNetworks_XDR,Scripts/HellowWorldScript --no-mypy
+```
+
 Details:
 
 1. lint and test check will execute on Packages `Integrations/PaloAltoNetworks_XDR,Scripts/HellowWorldScript`
@@ -21,14 +30,21 @@ Details:
 3. coverage report will be printed.
 
 ---
-`demisto-sdk lint -g -p 2`
+
+```bash
+demisto-sdk lint -g -p 2
+```
 
 1. lint and test check will execute on all Packages which are changed from `origin/master` and from in staging.
 2. 2 Threads will be used inorder to preform the lint.
 3. coverage report will be printed.
 
 ---
-`demisto-sdk lint -i Integrations/PaloAltoNetworks_XDR,Scripts/HellowWorldScript --coverage-report coverage_report`
+
+```bash
+demisto-sdk lint -i Integrations/PaloAltoNetworks_XDR,Scripts/HellowWorldScript --coverage-report coverage_report
+```
+
 Details:
 
 1. lint and test check will execute on Packages `Integrations/PaloAltoNetworks_XDR,Scripts/HellowWorldScript`

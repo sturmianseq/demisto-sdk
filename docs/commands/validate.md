@@ -1,10 +1,15 @@
+---
+title: validate
+---
+
 ::: mkdocs-click
     :module: demisto_sdk.__main__
     :command: validate
+    :prog_name: demisto-sdk validate
 
 Makes sure your content repository files are in order and have valid yml file scheme.
 
-### Notes
+## Notes
 
 In order to run the README validator:
 
@@ -18,12 +23,12 @@ In order to run the README validator:
 
 In case of a private repo and an un-configured 'DEMISTO_SDK_GITHUB_TOKEN' validation of version bumps in files will be done with the local remote git branch.
 
-### Use cases
+## Use cases
 
 This command is used to make sure that the content repo files are valid and are able to be processed by Demisto.
 This is used in our validation process both locally and in Circle CI.
 
-### Examples
+## Examples
 
 `demisto-sdk validate -g --no-backwards-comp`
 This will validate only changed files from content origin/master branch and will exclude backwards
@@ -47,13 +52,14 @@ This will validate all files under `Packs` directory
 `demisto-sdk validate -i Packs/HelloWorld`
 This will validate all files under the content pack `HelloWorld`
 
-### Error Codes and Ignoring Them
+## Error Codes and Ignoring Them
 
 Starting in version 1.0.9 of Demisto-SDK, each error found by validate (excluding `pykwalify` errors) has an error
 code attached to it - the code can be found in brackets preceding the error itself.
 For example: `path/to/file: [IN103] - The type field of the proxy parameter should be 8`
 
 The first 2 letters indicate the error type and can be used to easily identify the cause of the error.
+
 | Code | Type |
 | --- | --- |
 | BA | Basic error |

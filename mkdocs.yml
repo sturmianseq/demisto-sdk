@@ -1,5 +1,8 @@
 site_name: Demisto-SDK
+
 theme: readthedocs
 
 markdown_extensions:
     - mkdocs-click
+    - attr_list
+    - mdx_truly_sane_lists

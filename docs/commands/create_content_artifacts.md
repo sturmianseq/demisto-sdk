@@ -1,3 +1,6 @@
+---
+title: create-content-artifacts
+---
 
 ::: mkdocs-click
     :module: demisto_sdk.__main__

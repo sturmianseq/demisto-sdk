@@ -94,7 +94,7 @@ update_type=minor
 
 ### How to setup development environment?
 
-Follow the guide found [here](CONTRIBUTION.md#2-install-demisto-sdk-dev-environment) to setup your `demisto-sdk-dev` virtual environment.
+Follow the guide found [here](CONTRIBUTION#2-install-demisto-sdk-dev-environment) to setup your `demisto-sdk-dev` virtual environment.
 The development environment is connected to the branch you are currently using in the SDK repository.
 
 Simply activate it by running `workon demisto-sdk-dev`.
@@ -128,5 +128,5 @@ MIT - See [LICENSE](LICENSE) for more information.
 ## Contributions
 
 Contributions are welcome and appreciated.\
-For information regarding contributing, press [here](CONTRIBUTION.md).
+For information regarding contributing, press [here](CONTRIBUTION).
 For release guide, press [here](release_guide.md)
