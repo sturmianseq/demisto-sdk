@@ -5,7 +5,7 @@ title: format
 ::: mkdocs-click
     :module: demisto_sdk.__main__
     :command: format
-    :prog_name: format
+    :prog_name: demisto-sdk format
 
 ### Use Cases
 
@@ -22,7 +22,7 @@ demisto-sdk format
 
 This will check your branch changes and will run only on them.
 
-```bash
+```python
 demisto-sdk format -i Integrations/Pwned-V2/Pwned-V2.yml
 ```
 
