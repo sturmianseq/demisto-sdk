@@ -5,6 +5,7 @@ title: format
 ::: mkdocs-click
     :module: demisto_sdk.__main__
     :command: format
+    :prog_name: format
 
 ### Use Cases
 

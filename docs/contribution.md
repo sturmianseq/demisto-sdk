@@ -1,20 +1,8 @@
-# Contribution guide
+# Contribution Guide
 
-## Description
+## Getting Started
 
-We build `demisto-sdk` to support python 3.7 and 3.8.
-
-## Getting started
-
-1. [Clone demisto-sdk repository](#1-Clone-demisto-sdk-repository)
-2. [Install demisto sdk dev environment](#2-Install-demisto-sdk-dev-environment)
-3. [Pre-commit hooks setup](#3-Pre-commit-hooks-setup)
-4. [DemistoContentPython Libary](#4-DemistoContentPython-Libary)
-5. [Develop new command](#5-Develop-new-command)
-6. [Running unit-tests using tox](#6-running-unit-tests-using-tox)
-7. [Push changes to GitHub (External PRs)](#7-push-changes-to-github-relevant-only-for-external-prs)
-8. [Review Process](#8-review-process)
-9. [Contributor License Agreement (External PRs)](#9-contributor-license-agreement-relevant-only-for-external-prs)
+We build `demisto-sdk` to support python 3.7 and up.
 
 ---
 
@@ -67,7 +55,7 @@ We use are using [pre-commit](https://pre-commit.com/) to run hooks on our build
 
 ## Development
 
-### DemistoContentPython Libary
+### DemistoContentPython Library
 
 ContentPython is a python library used to interact with Demisto Content repository, high-level abstraction.
 For more information read the following [guide](tools/content_python.md).
@@ -160,7 +148,7 @@ You will see a few [GitHub Status Checks](https://help.github.com/en/github/coll
 
 Before merging any PRs, we need all contributors to sign a contributor license agreement. By signing a contributor license agreement, we ensure that the community is free to use your contributions.
 
-When you contribute a new pull request, a bot will evaluate whether you have signed the CLA. If required, the bot will comment on the pull request, including a link to accept the agreement. The CLA document is available for review as a [PDF](docs/cla.pdf).
+When you contribute a new pull request, a bot will evaluate whether you have signed the CLA. If required, the bot will comment on the pull request, including a link to accept the agreement. The CLA document is available for review as a [PDF](cla.pdf).
 
 If the `license/cla` status check remains on *Pending*, even though all contributors have accepted the CLA, you can recheck the CLA status by visiting the following link (replace **[PRID]** with the ID of your PR): <https://cla-assistant.io/check/demisto/demisto-sdk?pullRequest=[PRID>] .
 

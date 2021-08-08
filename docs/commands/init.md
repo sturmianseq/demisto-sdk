@@ -7,7 +7,7 @@ title: init
     :command: init
     :prog_name: demisto-sdk init
 
-## Use-Cases
+## Use Cases
 
 * This command is used to ease the initial creation of a pack, integration or a script.
 

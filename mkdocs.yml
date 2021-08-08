@@ -1,8 +1,15 @@
 site_name: Demisto-SDK
 
-theme: readthedocs
+theme:
+    name: material
+    logo: icons/logo.png
 
 markdown_extensions:
     - mkdocs-click
     - attr_list
     - mdx_truly_sane_lists
+    - toc
+
+plugins:
+    - mkdocstrings
+    - autorefs

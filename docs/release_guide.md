@@ -1,6 +1,6 @@
 In order to release a new version of `demisto-sdk` to the public follow these steps:
 
-### Validation before release
+## Validation before release
 
 1. Make sure the **CHANGELOG.md** file is in order and is updated with all the changes in the current release.
 
@@ -27,7 +27,7 @@ To do so, you can do the following:\
 
 1. Open a PR for that content branch, and verify that the build triggered is green. Note that in order to trigger the build, opening the PR is required.
 
-### Release process
+## Release process
 
 1. In demisto-sdk repository's main page click on **releases**.
 1. Click on **Draft a new release**.

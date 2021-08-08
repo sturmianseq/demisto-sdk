@@ -6,17 +6,18 @@ title: generate-docs
 ::: mkdocs-click
     :module: demisto_sdk.__main__
     :command: generate_docs
+    :prog_name: demisto-sdk generate-docs
 
-### Notes
+## Notes
 
 * If `command_permissions` wil not be given, a generic message regarding the need of permissions will be given.
 * If no `output` given, the README.md file will be generated in the `input` file repository.
 
-### Use-Cases
+## Use Cases
 
 This command is used to create a documentation file for Cortex XSOAR content files.
 
-### Examples
+## Examples
 
 ```bash
 demisto-sdk generate-docs -i Packs/MyPack/Integrations/MyInt/MyInt.yml -e Packs/MyPack/Integrations/MyInt/command_exmaple.txt
