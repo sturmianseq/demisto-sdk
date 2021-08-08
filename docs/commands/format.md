@@ -22,7 +22,7 @@ demisto-sdk format
 
 This will check your branch changes and will run only on them.
 
-```python
+```bash
 demisto-sdk format -i Integrations/Pwned-V2/Pwned-V2.yml
 ```
 

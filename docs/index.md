@@ -24,7 +24,7 @@ In order that demisto-sdk and Demisto server communicate, perfrom the following 
 
 * Add the following parameters to `~/.zshrc` and `~/.bash_profile`:
 
-   ```shell
+   ```bash
    export DEMISTO_BASE_URL=<http or https>://<demisto-server url or ip>:<port>
    export DEMISTO_API_KEY=<API key>
    ```
@@ -37,7 +37,7 @@ In order that demisto-sdk and Demisto server communicate, perfrom the following 
 
 You can use the SDK in the CLI as follows:
 
-```shell
+```bash
 demisto-sdk <command> <args>
 ```
 
@@ -48,7 +48,7 @@ For more information on a specific command execute `demisto-sdk <command> -h`.
 
 `demisto-sdk` will check against the GitHub repository releases for a new version every time it runs and will issue a warning if you are not using the latest and greatest. If you wish to skip this check you can set the environment variable: `DEMISTO_SDK_SKIP_VERSION_CHECK`. For example:
 
-```shell
+```bash
 export DEMISTO_SDK_SKIP_VERSION_CHECK=yes
 ```
 
@@ -71,21 +71,21 @@ Here are a few examples:
 
 * As a user, I would like to not use the `mypy` linter in my environment when using the `lint` command. In the `.demisto-sdk-conf` file I'll enter:
 
- ```buildoutcfg
+```toml
 [lint]
 no_mypy=true
 ```
 
 * As a user, I would like to include untracked git files in my validation when running the `validate` command. In the `.demisto-sdk-conf` file I'll enter:
 
-```buildoutcfg
+```toml
 [validate]
 include_untracked=true
 ```
 
 * As a user, I would like to automatically use minor version changes when running the `update-release-notes` command. In the `.demisto-sdk-conf` file I'll enter:
 
-```buildoutcfg
+```toml
 [update-release-notes]
 update_type=minor
 ```
@@ -107,13 +107,13 @@ The virtual environment can be deactivated at all times by running `deactivate`.
 Our CLI supports autocomplete for Linux/MacOS machines, you can turn this feature on by running one of the following:
 for zsh users run in the terminal
 
-```shell
+```bash
 eval "$(_DEMISTO_SDK_COMPLETE=source_zsh demisto-sdk)"
 ```
 
 for regular bashrc users run in the terminal
 
-```shell
+```bash
 eval "$(_DEMISTO_SDK_COMPLETE=source demisto-sdk)"
 ```
 
