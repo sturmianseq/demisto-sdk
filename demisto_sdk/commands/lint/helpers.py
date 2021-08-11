@@ -578,7 +578,7 @@ def export_report(report_call, format, dest):
         logger.warning(str(warning))
 
 
-def generate_coverage_report(html=False, xml=False, report=True, json=False, cov_dir='coverage_report'):
+def generate_coverage_report(html=False, xml=False, report=True, json_report=False, cov_dir='coverage_report'):
     """
     Args:
         html(bool): should generate an html report. default false
@@ -600,5 +600,5 @@ def generate_coverage_report(html=False, xml=False, report=True, json=False, cov
     if xml:
         export_report(cov.xml_report, 'xml', cov.config.xml_output)
 
-    if json:
+    if json_report:
         export_report(cov.json_report, 'json', cov.config.json_output)

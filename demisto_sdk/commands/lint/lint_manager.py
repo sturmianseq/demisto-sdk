@@ -421,7 +421,7 @@ class LintManager:
                                           lint_status=lint_status)
         if not no_coverage:
             if coverage_report:
-                generate_coverage_report(html=True, xml=True, json=True, cov_dir=coverage_report)
+                generate_coverage_report(html=True, xml=True, json_report=True, cov_dir=coverage_report)
             else:
                 generate_coverage_report()
 
