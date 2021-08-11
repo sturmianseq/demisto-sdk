@@ -147,8 +147,15 @@ def test_build_pytest_command_2():
 def test_build_pytest_command_3():
     """Build Pytest command with cov"""
     from demisto_sdk.commands.lint.commands_builder import build_pytest_command
-    command = "python -m pytest -ra --junitxml=/devwork/report_pytest.xml --cov-report= --cov=test"
+    command = "python -m pytest -ra --junitxml=/devwork/report_pytest.xml --cov-report= --cov=test --cov-fail-under=70.0"
     assert command == build_pytest_command(test_xml="test", cov="test")
+
+
+def test_build_pytest_command_4():
+    """Build Pytest command with cov"""
+    from demisto_sdk.commands.lint.commands_builder import build_pytest_command
+    command = "python -m pytest -ra --junitxml=/devwork/report_pytest.xml --cov-report= --cov=test --cov-fail-under=43.5"
+    assert command == build_pytest_command(test_xml="test", cov="test", min_cov=43.5)
 
 
 def test_build_pwsh_analyze():

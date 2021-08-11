@@ -1,9 +1,12 @@
-import importlib
+import json
+import logging
 import os
 
 import pytest
+from freezegun import freeze_time
 
-from demisto_sdk.commands.lint.helpers import (generate_coverage_report,
+from demisto_sdk.commands.lint.helpers import (export_report, get_coverage,
+                                               get_coverage_summery_file,
                                                split_warnings_errors)
 
 
@@ -152,26 +155,69 @@ def test_split_warnings_errors(linter_name, input_msg, output_error, output_warn
 
 
 class TestGenerateCoverageReport:
-    coverage = importlib.import_module('coverage')
+    def test_get_coverage(self):
+        cov_obj = get_coverage()
+        assert cov_obj.config.data_file == 'coverage_report/.coverage'
+        assert cov_obj.config.html_dir == 'coverage_report/html'
+        assert cov_obj.config.xml_output == 'coverage_report/coverage.xml'
+        assert cov_obj.config.json_output == 'coverage_report/coverage.json'
 
-    @staticmethod
-    def mock_path_exists(mocker):
-        mocker.patch('os.path.exists', return_value=True)
+    class TestExportReport:
+        def nothing(self):
+            from coverage.misc import CoverageException
+            raise CoverageException('some coverage exception')
 
-    def test_generate_coverage_report_with_report(self, mocker):
-        mock_report = mocker.patch.object(self.coverage.Coverage, 'report')
-        self.mock_path_exists(mocker)
-        generate_coverage_report()
-        mock_report.assert_called_once()
+        def test_export_report_logger(self, mocker):
+            logger_info = mocker.patch.object(logging.getLogger('demisto-sdk'), 'info')
+            export_report(lambda: None, 'format', 'dest')
+            logger_info.assert_called_once_with('exporting format coverage report to dest')
 
-    def test_generate_coverage_report_with_html(self, mocker):
-        mock_html_report = mocker.patch.object(self.coverage.Coverage, 'html_report')
-        self.mock_path_exists(mocker)
-        generate_coverage_report(report=False, html=True)
-        mock_html_report.assert_called_once_with(directory='coverage_report/html')
+        def test_export_report_error(self, mocker):
+            logger_warning = mocker.patch.object(logging.getLogger('demisto-sdk'), 'warning')
 
-    def test_generate_coverage_report_with_xml(self, mocker):
-        mock_xml_report = mocker.patch.object(self.coverage.Coverage, 'xml_report')
-        self.mock_path_exists(mocker)
-        generate_coverage_report(report=False, xml=True)
-        mock_xml_report.assert_called_once_with(outfile='coverage_report/coverage.xml')
+            export_report(self.nothing, 'format', 'dest')
+            logger_warning.assert_called_once_with('some coverage exception')
+
+        def test_export_report_called(self, mocker):
+            mocker.patch.object(self, 'nothing')
+            export_report(self.nothing, 'format', 'dest')
+            self.nothing.assert_called_once()
+
+
+class TestGetCoverageSummeryFile:
+
+    cov_url = "https://storage.googleapis.com/marketplace-dist-dev/code-coverage/coverage_data.json"
+
+    def test_without_file(self, requests_mock, tmpdir):
+        requests_mock.get(self.cov_url, json={'files': {'Packs/Lastline/Integrations/Lastline_v2/Lastline_v2.py': 40.0},
+                          'last_updated': '2021-08-10T00:00:00Z'})
+        files = get_coverage_summery_file(os.path.join(tmpdir, 'test.json'))
+        assert files == {'Packs/Lastline/Integrations/Lastline_v2/Lastline_v2.py': 40.0}
+
+    def test_without_dir(self, requests_mock, tmpdir):
+
+        requests_mock.get(self.cov_url, json={'files': {'Packs/Lastline/Integrations/Lastline_v2/Lastline_v2.py': 40.0},
+                          'last_updated': '2021-08-10T00:00:00Z'})
+        files = get_coverage_summery_file(os.path.join(tmpdir, 'test/test.json'))
+        assert files == {'Packs/Lastline/Integrations/Lastline_v2/Lastline_v2.py': 40.0}
+
+    @freeze_time('2021-08-10T01:00:00Z')
+    def test_with_updated_file(self, requests_mock, tmpdir):
+        file_path = os.path.join(tmpdir, 'test.json')
+        with open(file_path, 'w') as _file:
+            _file.write(json.dumps({'files': {'Packs/Lastline/Integrations/Lastline_v2/Lastline_v2.py': 40.0},
+                                    'last_updated': '2021-08-10T00:00:00Z'}))
+        requests_mock.get(self.cov_url, status_code=500)
+        files = get_coverage_summery_file(file_path)
+        assert files == {'Packs/Lastline/Integrations/Lastline_v2/Lastline_v2.py': 40.0}
+
+    @freeze_time('2021-08-10T01:00:00Z')
+    def test_with_old_file(self, requests_mock, tmpdir):
+        file_path = os.path.join(tmpdir, 'test.json')
+        with open(file_path, 'w') as _file:
+            _file.write(json.dumps({'files': {'Packs/Lastline/Integrations/Lastline_v2/Lastline_v2.py': 40.0},
+                                    'last_updated': '2021-08-09T00:00:00Z'}))
+        requests_mock.get(self.cov_url, json={'files': {'Packs/Lastline/Integrations/Lastline_v2/Lastline_v2.py': 50.0},
+                          'last_updated': '2021-08-10T00:00:00Z'})
+        files = get_coverage_summery_file(file_path)
+        assert files == {'Packs/Lastline/Integrations/Lastline_v2/Lastline_v2.py': 50.0}

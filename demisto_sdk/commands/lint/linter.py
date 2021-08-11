@@ -38,6 +38,7 @@ from demisto_sdk.commands.lint.helpers import (EXIT_CODES, FAIL, RERUN, RL,
                                                add_typing_module,
                                                coverage_report_editor,
                                                get_file_from_container,
+                                               get_minimum_coverage,
                                                get_python_version_from_image,
                                                pylint_plugin,
                                                split_warnings_errors,
@@ -858,11 +859,12 @@ class Linter:
         try:
             # Running pytest container
             cov = '' if no_coverage else self._pack_abs_dir.stem
+            code_file_abs_path = os.path.join(self._pack_abs_dir, f'{self._pack_abs_dir.stem}.py')
             uid = os.getuid() or 4000
             logger.debug(f'{log_prompt} - user uid for running lint/test: {uid}')  # lgtm[py/clear-text-logging-sensitive-data]
             container_obj: docker.models.containers.Container = self._docker_client.containers.run(
                 name=container_name, image=test_image, command=[build_pytest_command(test_xml=test_xml, json=True,
-                                                                                     cov=cov)],
+                                                                                     cov=cov, min_cov=get_minimum_coverage(code_file_abs_path))],
                 user=f"{uid}:4000", detach=True, environment=self._facts["env_vars"])
             stream_docker_container_output(container_obj.logs(stream=True))
             # Waiting for container to be finished
@@ -890,7 +892,7 @@ class Linter:
                     cov_data = cov_data if isinstance(cov_data, bytes) else cov_data.encode()
                     with open(cov_file_path, 'wb') as coverage_file:
                         coverage_file.write(cov_data)
-                    coverage_report_editor(cov_file_path, os.path.join(self._pack_abs_dir, f'{self._pack_abs_dir.stem}.py'))
+                    coverage_report_editor(cov_file_path, code_file_abs_path)
 
                 test_json = json.loads(get_file_from_container(container_obj=container_obj,
                                                                container_path="/devwork/report_pytest.json",

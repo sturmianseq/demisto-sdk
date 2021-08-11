@@ -1,5 +1,6 @@
 # STD python packages
 import io
+import json
 import logging
 import os
 import re
@@ -9,6 +10,7 @@ import sqlite3
 import tarfile
 import textwrap
 from contextlib import contextmanager
+from datetime import datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
 from typing import Dict, Generator, List, Optional, Union
@@ -501,7 +503,82 @@ def coverage_files():
         yield str(cov_path)
 
 
-def generate_coverage_report(html=False, xml=False, report=True, cov_dir='coverage_report'):
+def get_text_cov_report(cov_obg: coverage.Coverage) -> Optional[str]:
+    report_data = io.StringIO(
+        initial_value='\n\n############################\n unit-tests coverage report\n############################\n')
+    try:
+        cov_obg.report(file=report_data)
+    except coverage.misc.CoverageException as warning:
+        if isinstance(warning.args, tuple) and warning.args and warning.args[0] == 'No data to report.':
+            return f'No coverage data in file {cov_obg.config.data_file}'
+        raise
+    else:
+        return report_data.getvalue()
+
+
+def get_coverage(cov_dir='coverage_report', precision: int = 2) -> coverage.Coverage:
+    """
+    Args:
+        cov_dir(str): the directory where the coverage report will be written
+        percision(int): digits after the decimal point (e.g. for percision=2 74.3586 -> 74.35)
+    """
+    cov_obg = coverage.Coverage(config_file=False, auto_data=False)
+    cov_obg.set_option('run:data_file', os.path.join(cov_dir, '.coverage'))
+    cov_obg.set_option('report:precision', precision)
+    cov_obg.set_option('html:directory', os.path.join(cov_dir, 'html'))
+    cov_obg.set_option('xml:output', os.path.join(cov_dir, 'coverage.xml'))
+    cov_obg.set_option('json:output', os.path.join(cov_dir, 'coverage.json'))
+
+    # uncomment the following for debug purposes
+    # cov_obg.set_option('json:pretty_print', True)
+
+    cov_obg.combine(coverage_files())
+    return cov_obg
+
+
+def get_minimum_coverage(abs_file_path: str, epsilon: float = 3.0, default: float = 70.0,
+                         coverage_summery_file_path: str = './coverage_report/.coverage_summery.json') -> float:
+    file_rel_path = os.path.relpath(abs_file_path)
+    try:
+        cov_data = get_coverage_summery_file(coverage_summery_file_path)
+        return cov_data[file_rel_path] - epsilon
+    except KeyError:
+        return default
+
+
+def get_coverage_summery_file(coverage_summery_file_path: str) -> Dict[str, float]:
+    try:
+        with open(coverage_summery_file_path, 'r') as coverage_summery_file:
+            full_coverage_summery = json.load(coverage_summery_file)
+        last_updated = datetime.strptime(full_coverage_summery['last_updated'], '%Y-%m-%dT%H:%M:%SZ')
+        next_update = last_updated + timedelta(days=1)
+        if next_update > datetime.utcnow():
+            return full_coverage_summery['files']
+    except FileNotFoundError:
+        coverage_summery_dir_path = os.path.dirname(coverage_summery_file_path)
+        if not os.path.exists(coverage_summery_dir_path):
+            os.mkdir(coverage_summery_dir_path)
+    except (json.decoder.JSONDecodeError, KeyError, ValueError):
+        pass
+    cov_url = "https://storage.googleapis.com/marketplace-dist-dev/code-coverage/coverage_data.json"
+    data = requests.get(cov_url)
+    data.raise_for_status()
+    with open(coverage_summery_file_path, 'wb') as coverage_summery_file:
+        coverage_summery_file.write(data.content)
+
+    with open(coverage_summery_file_path, 'r') as coverage_summery_file:
+        return json.load(coverage_summery_file)['files']
+
+
+def export_report(report_call, format, dest):
+    logger.info(f'exporting {format} coverage report to {dest}')
+    try:
+        report_call()
+    except coverage.misc.CoverageException as warning:
+        logger.warning(str(warning))
+
+
+def generate_coverage_report(html=False, xml=False, report=True, json=False, cov_dir='coverage_report'):
     """
     Args:
         html(bool): should generate an html report. default false
@@ -509,40 +586,19 @@ def generate_coverage_report(html=False, xml=False, report=True, cov_dir='covera
         report(bool): should print the coverage report. default true
         cov_dir(str): the directory to place the report files (.coverage, html and xml report)
     """
-    cov_file = os.path.join(cov_dir, '.coverage')
-    cov = coverage.Coverage(data_file=cov_file)
-    cov.combine(coverage_files())
-    if not os.path.exists(cov_file):
-        logger.debug(f'skipping coverage report {cov_file} file not found.')
+    cov = get_coverage(cov_dir)
+    if not os.path.exists(cov.config.data_file):
+        logger.debug(f'skipping coverage report {cov.config.data_file} file not found.')
         return
 
-    export_msg = 'exporting {0} coverage report to {1}'
     if report:
-        report_data = io.StringIO()
-        report_data.write('\n\n############################\n unit-tests coverage report\n############################\n')
-        try:
-            cov.report(file=report_data)
-        except coverage.misc.CoverageException as warning:
-            if isinstance(warning.args, tuple) and warning.args and warning.args[0] == 'No data to report.':
-                logger.info(f'No coverage data in file {cov_file}')
-                return
-            raise warning
-        report_data.seek(0)
-        logger.info(report_data.read())
+        logger.info(get_text_cov_report(cov))
 
     if html:
-        html_dir = os.path.join(cov_dir, 'html')
-        logger.info(export_msg.format('html', os.path.join(html_dir, 'index.html')))
-        try:
-            cov.html_report(directory=html_dir)
-        except coverage.misc.CoverageException as warning:
-            logger.warning(str(warning))
-            return
+        export_report(cov.html_report, 'html', os.path.join(cov.config.html_dir, 'index.html'))
+
     if xml:
-        xml_file = os.path.join(cov_dir, 'coverage.xml')
-        logger.info(export_msg.format('xml', xml_file))
-        try:
-            cov.xml_report(outfile=xml_file)
-        except coverage.misc.CoverageException as warning:
-            logger.warning(str(warning))
-            return
+        export_report(cov.xml_report, 'xml', cov.config.xml_output)
+
+    if json:
+        export_report(cov.json_report, 'json', cov.config.json_output)
