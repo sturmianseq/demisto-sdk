@@ -566,8 +566,7 @@ def get_coverage_summery_file(coverage_summery_file_path: str) -> Dict[str, floa
     with open(coverage_summery_file_path, 'wb') as coverage_summery_file:
         coverage_summery_file.write(data.content)
 
-    with open(coverage_summery_file_path, 'r') as coverage_summery_file:
-        return json.load(coverage_summery_file)['files']
+    return data.json()['files']
 
 
 def export_report(report_call, format, dest):
