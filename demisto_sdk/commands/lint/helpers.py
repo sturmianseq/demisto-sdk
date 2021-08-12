@@ -564,7 +564,7 @@ def get_coverage_summery_file(coverage_summery_file_path: str) -> Dict[str, floa
     data = requests.get(cov_url)
     data.raise_for_status()
     with open(coverage_summery_file_path, 'wb') as coverage_summery_file:
-        coverage_summery_file.write(data.content)
+        coverage_summery_file.write(data.raw)
 
     return data.json()['files']
 
