@@ -563,8 +563,9 @@ def get_coverage_summery_file(coverage_summery_file_path: str) -> Dict[str, floa
     cov_url = "https://storage.googleapis.com/marketplace-dist-dev/code-coverage/coverage_data.json"
     data = requests.get(cov_url)
     data.raise_for_status()
-    with open(coverage_summery_file_path, 'wb') as coverage_summery_file:
-        coverage_summery_file.write(data.raw)
+
+    with open(coverage_summery_file_path, 'wb') as coverage_summery_raw:
+        coverage_summery_raw.write(data.raw)
 
     return data.json()['files']
 
